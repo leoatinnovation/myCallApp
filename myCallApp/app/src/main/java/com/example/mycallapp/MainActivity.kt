@@ -33,11 +33,13 @@ import com.example.mycallapp.commons.events.PermissionDenied
 import com.example.mycallapp.commons.events.PhoneManifestPermissionsEnabled
 import com.example.mycallapp.commons.utils.CapabilitiesRequestorImpl
 import com.example.mycallapp.commons.utils.ManifestPermissionRequesterImpl
+import com.example.mycallapp.commons.utils.Utils
 import com.example.mycallapp.ui.theme.MyCallAppTheme
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import pub.devrel.easypermissions.AppSettingsDialog
+import java.io.IOException
 import java.lang.ref.WeakReference
 
 
@@ -51,11 +53,6 @@ class MainActivity : BaseActivity(),
     private val CHANNEL_ID = "myCallAppId"
 
     private val NOTIFICATION_ID = 987654321
-
-    private val REQUEST_ID_MULTIPLE_PERMISSIONS: Int = 1
-    private val CREATE_FILE = 1
-
-    private val FILE_REQUEST_CODE = 2
 
     private lateinit var notificationChannel: NotificationChannel
     private lateinit var notificationManager: NotificationManager
@@ -76,6 +73,7 @@ class MainActivity : BaseActivity(),
                             Intent.FLAG_GRANT_WRITE_URI_PERMISSION
                     // Check for the freshest data.
                     contentResolver.takePersistableUriPermission(resultData.data.toString().toUri(), takeFlags)
+                    Log.d("SARA", " startActivityForResult resultData.data.toString() >>> " + resultData.data.toString())
                     saveFileUri(resultData.data.toString())
                 }
             }
@@ -101,7 +99,8 @@ class MainActivity : BaseActivity(),
         manifestPermissionRequestor.activity = WeakReference(this)
         capabilitiesRequestor.activityReference = WeakReference(this)
         manifestPermissionRequestor.getPermissions()
-        showNoticeDialog()
+//        clearPreference()
+        isSharedPrefPresent()
     }
 
     override fun onStart() {
@@ -120,6 +119,7 @@ class MainActivity : BaseActivity(),
             capabilitiesRequestor.invokeCapabilitiesRequest()
             checkCapabilitiesOnResume = false
         }
+        Log.d("SARA","OnSresume *********************************")
     }
 
     override fun onRequestPermissionsResult(
@@ -198,10 +198,6 @@ class MainActivity : BaseActivity(),
             addCategory(Intent.CATEGORY_OPENABLE)
             type = "application/text"
             putExtra(Intent.EXTRA_TITLE, "SpamCalls.txt")
-
-            // Optionally, specify a URI for the directory that should be opened in
-            // the system file picker before your app creates the document.
-            // putExtra(DocumentsContract.EXTRA_INITIAL_URI, pickerInitialUri)
         }
         startActivityForResult.launch(intent)
 
@@ -220,12 +216,29 @@ class MainActivity : BaseActivity(),
         }
     }
 
+    private fun clearPreference(){
+        val sharedPref = getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE)
+        sharedPref.edit().remove(SHARED_PREF_URI_NAME).apply();
+        Log.d("SARA","clearPreference cleared >>>>>>>>>>>>>>>>>>>>")
+        var fileUri = sharedPref.getString(SHARED_PREF_URI_NAME,"")
+        Log.d("SARA ", "=========== clearPreference +++++++++= " + fileUri)
+    }
+
+    private fun isSharedPrefPresent(){
+        val sharedPref = getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE)
+        if(sharedPref.contains(SHARED_PREF_URI_NAME)){
+            var fileUri = sharedPref.getString(SHARED_PREF_URI_NAME,"")
+            Log.d("SARA ", "=========== sharedPref exists fileUri +++++++++= " + fileUri)
+        }else{
+            Log.d("SARA ", "=========== sharedPref does not exists")
+            showNoticeDialog()
+        }
+    }
+
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onMessageEvent(event: MessageEvent) {
-        Log.d("myCallApp","EVENT >>>>>>>>>>>>>>>>>>>>>")
+        Log.d("SARA","EVENT >>>>>>>>>>>>>>>>>>>>>")
         showNotification()
-//        val newText = String.format("%s\n%s", event.message, textLog.text.toString())
-//        textLog.setText(newText)
     }
 
     @Composable

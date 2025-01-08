@@ -4,6 +4,7 @@ import android.content.Context
 import android.icu.text.SimpleDateFormat
 import android.util.Log
 import androidx.core.net.toUri
+import androidx.documentfile.provider.DocumentFile
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileNotFoundException
@@ -83,9 +84,9 @@ class Utils {
                 try {
                     val file = File(fileUri)
                     if (file.exists()) file.delete()
-                    Log.d("App", "fileUri deleting file ")
+                    Log.d("SARA", "fileUri deleting file ")
                 } catch (e: Exception) {
-                    Log.e("App", "Exception while deleting file " + e.message)
+                    Log.e("SARA", "Exception while deleting file " + e.message)
                 }
             }
         }
@@ -111,5 +112,6 @@ class Utils {
                 e.printStackTrace()
             }
         }
+
    }
 }
